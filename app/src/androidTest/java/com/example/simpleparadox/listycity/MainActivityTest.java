@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.robotium.solo.Solo;
 
@@ -47,48 +48,71 @@ public class MainActivityTest{
     public void start() throws Exception{
         Activity activity = rule.getActivity();
     }
-    /**
-     * Add a city to the listview and check the city name using assertTrue
-     * Clear all the cities from the listview and check again with assertFalse
-     */
+
     @Test
-    public void checkList(){
-        // Asserts that the current activity is the MainActivity. Otherwise, show “Wrong Activity”
+    public void checkListItemClicks(){
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.clickOnButton("ADD CITY");
+        solo.enterText((EditText) solo.getView(R.id.editText_name), "Khulna");
+        solo.clickOnButton("CONFIRM");
+        solo.clearEditText((EditText) solo.getView(R.id.editText_name));
+        assertTrue(solo.waitForText("Khulna", 1, 1000));
+
+        MainActivity activity = (MainActivity) solo.getCurrentActivity();
+        final ListView listView = activity.cityList;
+        String city1 = (String) listView.getItemAtPosition(0);
+        assertEquals("Khulna", city1);
+
+
+        String string1 = listView.getItemAtPosition(0).toString();
+        solo.clickOnText(string1);
+        solo.assertCurrentActivity("Wrong Activity", Second_page.class);
+
+        solo.clickOnButton("GO BACK");
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
 
-        solo.clickOnButton("ADD CITY"); //Click ADD CITY Button
 
-        //Get view for EditText and enter a city name
-        solo.enterText((EditText) solo.getView(R.id.editText_name), "Edmonton");
-        solo.clickOnButton("CONFIRM"); //Select CONFIRM Button
-        solo.clearEditText((EditText) solo.getView(R.id.editText_name)); //Clear the EditText
-
-        /* True if there is any text: Edmonton on the screen, wait at least 2 seconds and
-        find minimum one match. */
-        assertTrue(solo.waitForText("Edmonton", 1, 2000));
-
-        solo.clickOnButton("ClEAR ALL"); //Select ClEAR ALL
-        //True if there is no text: Edmonton on the screen
-        assertFalse(solo.searchText("Edmonton"));
+        solo.clickOnButton("ClEAR ALL");
+        assertFalse(solo.searchText("Khulna"));
 
     }
 
-    /**
-     * Check item taken from the listview
-     */
+
+
+
     @Test
-    public void checkCiyListItem(){
+    public void checkActivitySwitching(){
         solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+        solo.clickOnButton("ADD CITY");
+        solo.enterText((EditText) solo.getView(R.id.editText_name), "Khulna");
+        solo.clickOnButton("CONFIRM");
+        solo.clearEditText((EditText) solo.getView(R.id.editText_name));
+        assertTrue(solo.waitForText("Khulna", 1, 2000));
 
         solo.clickOnButton("ADD CITY");
-        solo.enterText((EditText) solo.getView(R.id.editText_name), "Edmonton");
+        solo.enterText((EditText) solo.getView(R.id.editText_name), "Dhaka");
         solo.clickOnButton("CONFIRM");
-        solo.waitForText("Edmonton", 1, 2000);
-        // Get MainActivity to access its variables and methods.
+        solo.clearEditText((EditText) solo.getView(R.id.editText_name));
+        assertTrue(solo.waitForText("Dhaka", 1, 2000));
+
         MainActivity activity = (MainActivity) solo.getCurrentActivity();
-        final ListView cityList = activity.cityList; // Get the listview
-        String city = (String) cityList.getItemAtPosition(0); // Get item from first position
-        assertEquals("Edmonton", city);
+        final ListView listView = activity.cityList;
+        String string1 = listView.getItemAtPosition(0).toString();
+        solo.clickOnText(string1);
+        solo.assertCurrentActivity("Wrong Activity", Second_page.class);
+        String text = ((TextView) solo.getView(R.id.textview)).getText().toString();
+        assertEquals(string1, text);
+        solo.clickOnButton("GO BACK");
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+
+        String string2 = listView.getItemAtPosition(1).toString();
+        solo.clickOnText(string2);
+        solo.assertCurrentActivity("Wrong Activity", Second_page.class);
+        text = ((TextView) solo.getView(R.id.textview)).getText().toString();
+        assertEquals(string2, text);
+        solo.clickOnButton("GO BACK");
+        solo.assertCurrentActivity("Wrong Activity", MainActivity.class);
+
     }
 
     /**
